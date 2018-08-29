@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>BUILDER</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="index.css">
+
+</head>
+
+<body>
+    <div class="main">
+        <div id="sidebar" onmouseover="myMoveOverFunction(this)" onmouseout="myMoveOutFunction(this)">
+            <div class="tophead">
+                <p>comproDLS
+                    <sup id="mark">TM</sup>
+                </p>
+                <p>-compro technologies</p>
+            </div>
+            <div class="toc">
+                <ul id='uldata'>
+
+                </ul>
+            </div>
+        </div>
+        <div id="mainbody">
+            <div class="topbar">
+                <div class="topbar_child">
+                    <span>
+                        <i class="fa fa-database" aria-hidden="true"></i>
+                        <span>Demo_Class3</span>
+                    </span>
+                    <span>
+                        <strong>Aman Goyal</strong>(admin)</span>
+                    <span>Programming languages</span>
+                </div>
+            </div>
+            <div id="contents">
+                <iframe id="iframee" src='content.html' height="900px" width="100%">
+                </iframe>
+                <div id="app"></div>
+
+
+
+            </div>
+
+
+        </div>
+    </div>
+
+
+    <script type="text/javascript">
+
+        var myObj;
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                myObj = JSON.parse(this.responseText);
+                execute();
+            }
+        };
+
+        xmlhttp.open("GET", "https://raw.githubusercontent.com/sinhavartika/training/master/sidebar.json", true);
+        xmlhttp.send();
+
+        function execute() {
+            var menu = myObj.menu;
+            var _ul = document.getElementById('uldata');
+            menu.forEach(function (menuItem) {
+                // create new li and icon elements
+                var _li = document.createElement('li');
+                var _i = document.createElement('i');
+
+                _i.className = "fa " + menuItem.icon;
+
+                _li.appendChild(_i);
+                _li.appendChild(document.createTextNode(menuItem.title));
+
+                if (menuItem['sub-menu']) {
+                    var sub = menuItem["sub-menu"];
+
+                    var _i2 = document.createElement('i');
+                    _i2.className = "toggle fa fa-angle-left";
+                    _li.appendChild(_i2);
+
+
+                    var _ul_ = document.createElement('ul');
+                    _ul_.setAttribute("id", "ulId");
+                    _ul_.className = "hide";
+                    sub.forEach(function (menuItem1) {
+                        var _li2 = document.createElement('li');
+                        var node = document.createTextNode(menuItem1.title)
+                        if (menuItem1.title == "courses") {
+
+
+                            _li2.addEventListener("click", displayJSON);
+                        }
+                        _li2.appendChild(node);
+
+
+                        _ul_.append(_li2);
+                    });
+
+                    _li.append(_ul_);
+
+                    _li.addEventListener("click", function () {
+                        _i2.className = "toggle fa fa-angle-down";
+                        if (_ul_.className === "hide") {
+                            _ul_.className = "";
+                        } else {
+                            _ul_.className = "hide";
+                        }
+                    });
+
+                }
+
+                else {
+                    _li.addEventListener("click", function () {
+                        document.getElementById("iframee").setAttribute("src", "content.html?data=" + menuItem.data);
+                    });
+                }
+                _ul.append(_li);
+
+            });
+
+        }
+
+
+
+
+
+
+
+        function displayJSON() {
+
+           var a =  document.getElementById("iframee")
+           
+           let promise = new Promise((resolve, reject) => {
+                var xmlhttp3 = new XMLHttpRequest();
+                xmlhttp3.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        ObjJSON = JSON.parse(this.responseText);
+                        resolve(ObjJSON);
+                    }
+                };
+                xmlhttp3.open("GET", "https://raw.githubusercontent.com/sinhavartika/training/master/courses.json", true);
+                xmlhttp3.send();
+            });
+            promise.then(function (ObjJSON) {
+                displayTemplate().then(function (ObjTemplate) {
+                    merge(ObjJSON, ObjTemplate);
+                });
+            });
+        }
+
+        var ObjJSON;
+        var ObjTemplate;
+
+        function displayTemplate() {
+            return new Promise((resolve, reject) => {
+                var xmlhttp2 = new XMLHttpRequest();
+                xmlhttp2.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        var parser = new DOMParser();
+                        ObjTemplate = this.responseText;
+                        resolve(ObjTemplate);
+                        //parser.parseFromString(this.responseText, 'text/html');
+                        //console.log(ObjTemplate.all);
+                        // console.log(this.responseText);
+
+                    }
+                };
+
+                xmlhttp2.open("GET", "https://raw.githubusercontent.com/sinhavartika/training/master/courselist.html", true);
+                xmlhttp2.send();
+
+            });
+
+        }
+
+
+
+        function merge(ObjJSON, ObjTemplate) {
+
+            console.log(ObjJSON);
+            console.log(ObjTemplate);
+
+            document.getElementById("app").innerHTML = ObjTemplate;
+            var courseul = document.getElementsByClassName('list-group');
+            courseul.className = "hide";
+            ObjJSON.forEach(
+                function (value) {
+                    var courseli = document.createElement('li');
+                    var node = document.createTextNode(value.name);
+                    console.log(value.name);
+                    courseli.appendChild(node);
+                    courseul[0].append(courseli);
+                }
+            )
+
+
+        }
+
+
+
+
+        function myMoveOverFunction(x) {
+            var right = document.getElementById('mainbody');
+            right.style.left = "180px"
+        }
+
+        function myMoveOutFunction(x) {
+            var right = document.getElementById('mainbody');
+            right.style.left = "40px";
+        }
+
+
+        document.getElementById('uldata').style.fontSize = '17px';
+        document.getElementById('contents').style.fontSize = '30px';
+
+    </script>
+</body>
+
+</html>
